@@ -9,5 +9,8 @@ venv/
 .DS_Store
 .ipynb_checkpoints/
 *.log
-dataset/
+dataset/Taskent/*
+dataset/meta.json
+dataset/README.md
+
 
