@@ -2,6 +2,8 @@ import torch
 import torch.nn as nn
 import numpy as np
 
+from einops import rearrange
+
 
 # class DINOImageClassifier(nn.Module):
 #     def __init__(self, input_dim=384, hidden_dim=768, num_classes=18):
@@ -28,6 +30,10 @@ import numpy as np
 #         return logits
 
 
+## Version 1
+## From DINO: 3600,364
+## Fwd: 3600,18 -> 18
+
 class DINOImageClassifier(nn.Module):
     def __init__(self, input_dim=384, hidden_dim=768, num_classes=18):
         super(DINOImageClassifier, self).__init__()
@@ -50,5 +56,23 @@ class DINOImageClassifier(nn.Module):
 
         x = x.permute(0, 2, 1).contiguous()  # [B, D, N]
         x = x.view(B, D, H, W)               # [B, D, H, W]
+        logits = self.model(x)
+        return logits
+    
+## Version 2
+## From DINO: N,3600,364
+## Our forward pass: N*3600,364-> Nx3600,2
+
+class DINOPatchClassifier(nn.Module):
+    def __init__(self, input_dim=384, hidden_dim=768, num_classes=2):
+        super(DINOPatchClassifier, self).__init__()
+
+        self.model = nn.Sequential(
+            nn.Linear(input_dim, hidden_dim),
+            nn.ReLU(),
+            nn.Linear(hidden_dim, num_classes)
+        )
+
+    def forward(self, x):
         logits = self.model(x)
         return logits
