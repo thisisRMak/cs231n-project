@@ -74,5 +74,21 @@ class DINOPatchClassifier(nn.Module):
         )
 
     def forward(self, x):
+        """
+        Forward pass for patch-wise classification.
+        
+        Args:
+            x: Input tensor of shape (N*P, D) where:
+               N = batch size
+               P = number of patches per image (3600)
+               D = feature dimension (384)
+        
+        Returns:
+            Tensor of shape (N*P, C) where C is number of classes
+        """
+        # Input should be flattened: (N*P, D)
+        assert len(x.shape) == 2, f"Expected 2D input (N*P, D), got shape {x.shape}"
+        assert x.shape[1] == 384, f"Expected feature dim 384, got {x.shape[1]}"
+        
         logits = self.model(x)
         return logits
