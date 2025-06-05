@@ -261,3 +261,57 @@ class PetroSubImageDataset(Dataset):
 
         return self.stacked_data[idx]
 
+
+
+class PetroTrainTestSplitDataset(Dataset):
+    def __init__(self, folder_path, image_indices=None, sub_image_size=default_sub_image_size):
+        self.full_dataset = PetroSubImageDataset(
+            folder_path,
+            image_indices=image_indices,
+            sub_image_size=sub_image_size
+        )
+        
+        # Create train/test indices
+        all_indices = list(range(len(self.full_dataset)))
+        self.test_indices = [i for i in all_indices if i % 8 in [6, 7]]
+        self.train_indices = [i for i in all_indices if i % 8 not in [6, 7]]
+        
+        # Create train and test datasets
+        self.splits = {
+            'train': TrainTestSplit(self.full_dataset, self.train_indices),
+            'test': TrainTestSplit(self.full_dataset, self.test_indices)
+        }
+
+    def __getitem__(self, key):
+        if key not in ['train', 'test']:
+            raise KeyError("Only 'train' and 'test' splits are available")
+        return self.splits[key]
+
+class TrainTestSplit(Dataset):
+    def __init__(self, dataset, indices):
+        self.dataset = dataset
+        self.indices = indices
+
+    def __len__(self):
+        return len(self.indices)
+
+    def __getitem__(self, idx):
+        return self.dataset[self.indices[idx]]
+
+
+
+# Example usae of PetroTrainTestSplitDataset
+if __name__ == "__main__":
+    
+    dataset = PetroTrainTestSplitDataset(folder_path="./dataset/Taskent")
+
+    train_dataset = dataset['train']
+    test_dataset = dataset['test']
+
+    
+    train_sample = train_dataset[0]
+    test_sample = test_dataset[0]
+
+    print(f"Train dataset size: {len(train_dataset)}")
+    print(f"Test dataset size: {len(test_dataset)}")
+
