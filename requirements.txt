@@ -6,3 +6,7 @@ matplotlib
 ipykernel
 scikit-learn
 einops
+tqdm
+dotenv
+wandb
+
